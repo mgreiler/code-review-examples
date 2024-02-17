@@ -77,8 +77,11 @@ function redeemHoursToPlayerProfile(hours, credits, playerId) {
  */
 function chargeCreditsFromPlayer(credits, playerId) {
   creditQuery = "SELECT credits FROM players WHERE playerId = " + playerId;
-  oldCredits = executeQuery(hourQuery);
-
+  try {
+    oldCredits = executeQuery(hourQuery);
+  } catch (err) {
+  throw new Error("Could not add hours.");
+  }
   updateQuery = "Update players SET credits = " + (oldCredits - credits) + " WHERE playerId = " + playerId;
 
   try {
