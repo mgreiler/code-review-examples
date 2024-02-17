@@ -103,7 +103,7 @@ function chargeCreditsFromPlayer(credits, playerId) {
 function convertCreditsToHours(playerLevel, credits) {
   if (playerLevel < 3) {
     return 3 * credits;
-  } else if (playerLevel > 3 && playerLevel <= 8) {
+  } else if (playerLevel >= 3 && playerLevel <= 8) {
     return 1.5 * credits;
   } else {
     return 1 * credits;
