@@ -1,3 +1,5 @@
+const sqlite3 = require('sqlite3').verbose();
+
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -9,14 +11,12 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-app.post("/redeem", function (req, res) {
-  const credits = req.body.credits;
-  const userId = req.body.userId;
-  const username = req.body.username;
-  console.log(`redeeming ${credits} credits for user: ${username} (${userId})`);
+app.post("/redeem", async function (req, res) {
+  const { credits, userId, username } = req.body;
+  console.log(`Redeeming ${credits} credits for user: ${username} (${userId})`);
 
   try {
-    const hours = redeemCredits(credits, userId);
+    const hours = await redeemCredits(credits, userId); // Ensure redeemCredits function is adapted to work with async/await
     res.send({
       status: `User ${username} redeemed ${credits} credits to get ${hours} hours.`,
     });
@@ -48,10 +48,27 @@ function redeemCredits(credits, playerId) {
  * Returns the level of the player.
  */
 function getPlayerLevel(playerId) {
-  levelQuery = "SELECT playerLevel FROM players WHERE playerId = " + playerId;
-  playerLevel = executeQuery(levelQuery);
+  return new Promise((resolve, reject) => {
+    let db = new sqlite3.Database('./gaming.db', sqlite3.OPEN_READONLY, (err) => {
+      if (err) {
+        console.error(err.message);
+        reject(err);
+      }
+    });
 
-  return playerLevel;
+    levelQuery = "SELECT playerLevel FROM players WHERE playerId = " + playerId;
+
+    db.get(levelQuery, (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row ? row.playerLevel : null);
+      }
+    });
+
+    db.close();
+  });
+
 }
 
 /**
